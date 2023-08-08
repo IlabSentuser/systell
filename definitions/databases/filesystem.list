@@ -1,0 +1,5 @@
+# The following is a list of files and their desired attributes (permissions, md5sum, etc) this will be validated using the stated data against the real one, entries are key=value pairs and separated by spaces, if a value contains a space or an equals sign it must be enclosed in double quotes i.e path="/tmp/filename with spaces or equals sign"
+md5=69ebb9f7cd642edceb2fc8c10e507264 perms=755 owner=root group=root path=/boot/initramfs-linux.img
+md5=266bdac907c1ad49e994d49915d93595 perms=755 owner=root group=root path=/boot/vmlinuz-linux
+md5=92855f96c661a2002ae04dca3d53e2bf perms=755 owner=root group=root path=/boot/grub/grub.cfg
+md5=d41d8cd98f00b204e9800998ecf8427ea path="/tmp/asd asd2"

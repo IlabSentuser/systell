@@ -1,0 +1,4 @@
+# Definition of white and black lists for processes based on rules, for example: acl=white cmd=/sbin/init pid=1 would set a white list for the init process when it has the pid 1, and acl=black cmd=/sbin/init pid=2 would set a black list for the init process when it has a pid of 2. Each rule will be processed in order and all its conditions must be true for a process in order for it to be analyzed. Keep in mind that elements that fall in both whitelists and black lists will be reported in both analysis, this is intentional and serves the purpose of identifying troublesome rules in order to refine them, if this wants to be avoided, then proper rules must be set.
+acl=whitelist cmdline=/sbin/init
+acl=blacklist cmdline=/bin/asd2
+acl=blacklist name=okular
