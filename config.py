@@ -26,7 +26,7 @@ class Config:
         self.locations_config.read(self.locations_file)
 
     def get_value(self, section, key):
-        return self.locations_config.get(section, key)
+        return self.locations_config.get(section, key, fallback=None)
     
     def get_custom_definitions(self):
         if self.custom_definitions is None:

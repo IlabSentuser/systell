@@ -40,16 +40,19 @@ class Controller:
         if self.config.distro == Constants.DISTRO.ARCHLINUX:            
             pacman_logs_path = self.config.get_value(Constants.SECTION.PACMAN_LOGS, 'Path')
             rules_path = self.config.get_value(Constants.SECTION.PACMAN_LOGS, 'RulesFile')   
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, pacman_logs_path))
+            if pacman_logs_path is not None:
+                parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, pacman_logs_path))
         
         if self.config.distro == Constants.DISTRO.UBUNTU:
             apt_logs_path = self.config.get_value(Constants.SECTION.APT_LOGS, 'Path')
-            rules_path = self.config.get_value(Constants.SECTION.APT_LOGS, 'RulesFile')     
-            parsers.append(AptLogsParser(rules_path, Constants.SCOPE.LOG, apt_logs_path))
+            rules_path = self.config.get_value(Constants.SECTION.APT_LOGS, 'RulesFile')  
+            if apt_logs_path is not None:   
+                parsers.append(AptLogsParser(rules_path, Constants.SCOPE.LOG, apt_logs_path))
 
             dpkg_logs_path = self.config.get_value(Constants.SECTION.DPKG_LOGS, 'Path')
             rules_path = self.config.get_value(Constants.SECTION.DPKG_LOGS, 'RulesFile')
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, dpkg_logs_path))
+            if dpkg_logs_path is not None:
+                parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, dpkg_logs_path))
 
         custom_definitions = self.config.get_custom_definitions()
         if custom_definitions is not None:
@@ -59,7 +62,7 @@ class Controller:
 
                 parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, file_path))
 
-        #Journal
+        # The journal is considered always present, it could be considered a flag for those escenarios where it might not be, like a customized Archlinux
         if True:
             rules_path = f'{Constants.PATH.GENERIC_RULES_PATH}/{Constants.GENERIC.JOURNAL}.ini'
             parsers.append(JournalLogParser(rules_path, Constants.SCOPE.LOG))
@@ -72,22 +75,26 @@ class Controller:
         # sshd_conf
         sshd_conf_path = self.config.get_value(Constants.SECTION.OPENSSH_CONF, 'Path')
         rules_path = self.config.get_value(Constants.SECTION.OPENSSH_CONF, 'RulesFile')     
-        parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, sshd_conf_path))
+        if sshd_conf_path is not None:
+            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, sshd_conf_path))
 
         # passwd file
         passwd_path = self.config.get_value(Constants.SECTION.PASSWD, 'Path')
         rules_path = self.config.get_value(Constants.SECTION.PASSWD, 'RulesFile')     
-        parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, passwd_path))
+        if passwd_path is not None:
+            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, passwd_path))
 
         # apache conf
         apache_conf_path = self.config.get_value(Constants.SECTION.APACHE_CONF, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.APACHE_CONF, 'RulesFile')     
-        parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, apache_conf_path))
+        rules_path = self.config.get_value(Constants.SECTION.APACHE_CONF, 'RulesFile') 
+        if apache_conf_path is not None:
+            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, apache_conf_path))
 
         # login_defs conf
         login_defs_conf_path = self.config.get_value(Constants.SECTION.LOGIN_DEFS, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.LOGIN_DEFS, 'RulesFile')     
-        parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, login_defs_conf_path))
+        rules_path = self.config.get_value(Constants.SECTION.LOGIN_DEFS, 'RulesFile')    
+        if login_defs_conf_path is not None: 
+            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, login_defs_conf_path))
 
         return parsers
 
@@ -106,11 +113,13 @@ class Controller:
             verify_rules_path = self.config.get_value(Constants.SECTION.DPKG_CHECKS, 'RulesFile')     
             upgradeable_rules_path = self.config.get_value(Constants.SECTION.UPGRADEABLE, 'RulesFile')     
         
-        verifier_parser = PackageVerificationParser(verify_rules_path, Constants.SCOPE.PACKAGE, verify_command)
-        upgradeable_parser = PackageUpgradeabilityParser(upgradeable_rules_path, Constants.SCOPE.PACKAGE, upgradeable_command, self.config.distro)
-
-        parsers.append(verifier_parser)
-        parsers.append(upgradeable_parser)
+        if verify_command is not None:
+            verifier_parser = PackageVerificationParser(verify_rules_path, Constants.SCOPE.PACKAGE, verify_command)
+            parsers.append(verifier_parser)
+        
+        if upgradeable_command is not None:
+            upgradeable_parser = PackageUpgradeabilityParser(upgradeable_rules_path, Constants.SCOPE.PACKAGE, upgradeable_command, self.config.distro)
+            parsers.append(upgradeable_parser)
 
         return parsers
 
