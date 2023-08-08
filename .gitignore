@@ -9,6 +9,7 @@ test.py
 notes.txt
 TODO
 bin
+pyvenv.cfg
 
 
 # C extensions
