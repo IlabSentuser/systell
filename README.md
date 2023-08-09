@@ -12,16 +12,16 @@ Systell is a tool and library usable to obtain information about linux systems. 
 - Archlinux
 
 # Requirements
+## External
 - python 3
 - systemd (exists by default on supported systems)
 - corresponding package manager (apt, dpkg, pacman)
 - nmap
-## Libraries
+## Python Libraries
 - python-nmap
 - psutil
 - systemd-python
 - distro
-- dateutil
 
 # Steps to execute
 `python main.py` for interactive mode or
