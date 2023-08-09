@@ -24,9 +24,12 @@ Systell is a tool and library usable to obtain information about linux systems. 
 - distro
 
 # Steps to execute
-The first step is to make sure to install the aforementioned dependencies. 
+The first step is to make sure to install the aforementioned dependencies.
+<br>
 The second step is to define your rules, sevaral of the rule files provide commented out examples, the rules syntax is explained in comments along the examples provided and also in the docs.
+<br>
 The third step is to execute the tool either:
+<br>
 `python main.py` for interactive mode or
 <br>
 `python main.py -h` for help with unattended mode
