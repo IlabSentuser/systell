@@ -4,7 +4,10 @@ import os
 import pwd
 import grp
 import socket
-import psutil
+try:
+    import psutil
+except ImportError:
+    print('nmap module not available, please make sure to install it.')
 
 class CheckerManager:
     

@@ -1,6 +1,9 @@
 from definitions.constants import Constants 
 import configparser
-import nmap
+try:
+    import nmap
+except ImportError:
+    print('nmap module not available, please make sure to install it.')
 
 class Remote:
     def __init__(self, id, ip, port, operation, assessment=None):

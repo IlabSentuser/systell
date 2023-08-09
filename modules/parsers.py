@@ -2,7 +2,10 @@ import configparser
 from definitions.constants import Constants 
 from entities import Rule
 import re
-from systemd import journal
+try:
+    from systemd import journal
+except ImportError:
+    print('systemd module not available, please make sure to install it.')
 from datetime import datetime
 from utils import time_parser
 import subprocess

@@ -4,13 +4,29 @@ from modules import cli
 from utils import fprint as fprint
 from config import Config
 import configparser
-import distro
+try:
+    import distro
+except ImportError:
+    print('distro module not available, please make sure to install it.')
 from definitions.constants import Constants
+import importlib.util
 
 #Defaults section
 CONFIG_FILE = None
 
 if __name__ == "__main__":
+
+    # Check dependencies
+    required_dependencies = ['nmap', 'distro', 'psutil', 'systemd']
+    not_found_dependencies = []
+    for dependency in required_dependencies:
+        module = importlib.util.find_spec(dependency)
+        if module is None:
+            not_found_dependencies.append(dependency)
+    if len(not_found_dependencies) > 0:
+        print('There are unsatisfied dependencies, please make sure to install them first.')
+        sys.exit(1)
+
     distro = distro.name()
     scope = None
     unattended = False
