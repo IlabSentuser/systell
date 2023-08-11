@@ -49,22 +49,6 @@ class Constants:
         class SECTION:
             TYPE_LINE = 'LINE'
             TYPE_BLOCK = 'BLOCK'
-            NETWORK_MANAGER_CONF = 'NetworkManager_conf'
-            APACHE_CONF = 'Apache_conf'
-            APACHE_LOGS = 'Apache_logs'
-            OPENSSH_CONF = 'OpenSSH_conf'
-            MYSQL_CONF = 'MySQL_conf'
-            SYSTEMD_CONF = 'systemd_conf'
-            APT_CONF = 'apt_conf'
-            APT_LOGS = 'apt_logs'
-            DPKG_LOGS = 'dpkg_logs'
-            PACMAN_CONF = 'pacman_conf'
-            PACMAN_LOGS = 'pacman_logs'
-            PACMAN_CHECKS = 'pacman_checks'
-            DPKG_CHECKS = 'dpkg_checks'
-            UPGRADEABLE = 'upgradeable' 
-            PASSWD = 'passwd'
-            LOGIN_DEFS = 'login_defs'
 
         class GENERIC:
             JOURNAL = 'journal'
