@@ -4,7 +4,7 @@ import os
 
 class Config:
     
-    def __init__(self, distro, locations_file, rules_directory, scope='', reports_path = Constants.PATH.DEFAULT_REPORTS_PATH):
+    def __init__(self, distro, locations_file, rules_directory, scope='', reports_path = Constants.PATH.DEFAULT_REPORTS_PATH, use_journal = True):
         self.distro = distro
         self.locations_file = locations_file
         self._load_locations()
@@ -20,6 +20,7 @@ class Config:
             for item in scope.split(' '):
                 self.scope.append(int(item))
         self.reports_path = reports_path
+        self.use_journal = use_journal
     
     def _load_locations(self):
         self.locations_config = configparser.ConfigParser()

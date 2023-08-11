@@ -95,8 +95,13 @@ class GenericParser:
     def set_pretty_name(self, name):
         self.__pretty_name__ = name
 
-class AptLogsParser(GenericParser):
+class GenericBlockParser(GenericParser):
     __pretty_name__ = 'Aptitude Logs Parser'
+
+    def __init__(self, rules_path, scope, start_delimiter, end_delimiter, source = None):
+        super().__init__(rules_path, scope, source)
+        self.start_delimiter = start_delimiter
+        self.end_delimiter = end_delimiter
 
     def parse(self):
         output = []
@@ -108,9 +113,9 @@ class AptLogsParser(GenericParser):
             for line in file:
                 total_entries += 1 
                 
-                if line.startswith('Start-Date:'):
+                if line.startswith(self.start_delimiter):
                     block_started = True
-                elif line.startswith('End-Date:'):
+                elif line.startswith(self.end_delimiter):
                     block.append(line)
                     block_started = False
                 
@@ -234,28 +239,9 @@ class JournalLogParser(GenericParser):
         
         return output
 
-class PackageVerificationParser(GenericParser):
-    __pretty_name__ = 'Package Verification Parser'
+class GenericCommandParser(GenericParser):
+    __pretty_name__ = 'Generic Command Output Parser'
     isParallelizable = True
-
-    def parse(self):
-        output = []
-
-        checks = self._get_checks()
-        total_entries = len(checks)
-
-        for line in checks:
-            result = self._parse_entry(line)
-            if result:
-                for item in result:
-                    output.append(item)
-        
-        if len(output) > 0:
-            output = [self._generate_header(output, total_entries)] + output
-        else:
-            output = [self._generate_header(output, total_entries)]
-            
-        return output
 
     def _get_checks(self):
         command_output = subprocess.run(self.source, shell=True, capture_output=True, text=True)
@@ -264,22 +250,11 @@ class PackageVerificationParser(GenericParser):
 
         return output
 
-class PackageUpgradeabilityParser(PackageVerificationParser):
-    __pretty_name__ = 'Package Upgradability Parser'
-
-    def __init__(self, rules_path, scope, source = None, distro = Constants.DISTRO.ARCHLINUX):
-        super().__init__(rules_path, scope, source)
-        self.distro = distro
-
     def parse(self):
         output = []
 
         checks = self._get_checks()
-
-        if self.distro == Constants.DISTRO.ARCHLINUX:
-            total_entries = len(checks)
-        else:
-            total_entries = len(checks) - 1
+        total_entries = len(checks)
 
         for line in checks:
             result = self._parse_entry(line)
