@@ -22,6 +22,11 @@ class Constants:
                 scope_names = {1:'LOG', 2:'CONF', 3:'PACKAGE', 4:'SERVICE', 5:'LOCAL', 6:'REMOTE', 7:'SMART'}
 
                 return scope_names[scope]
+            
+            def get_scope_index(scope):
+                scope_index = {'LOG': 1, 'CONF': 2, 'PACKAGE': 3, 'SERVICE': 4, 'LOCAL': 5, 'REMOTE': 6, 'SMART': 7}
+
+                return scope_index[scope]
 
         class DISTRO:
             UBUNTU = 'Ubuntu'
@@ -42,6 +47,8 @@ class Constants:
                 PROCESSES = 'definitions/databases/processes.list'
 
         class SECTION:
+            TYPE_LINE = 'LINE'
+            TYPE_BLOCK = 'BLOCK'
             NETWORK_MANAGER_CONF = 'NetworkManager_conf'
             APACHE_CONF = 'Apache_conf'
             APACHE_LOGS = 'Apache_logs'

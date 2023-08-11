@@ -1,4 +1,4 @@
-from modules.parsers import GenericParser, AptLogsParser, JournalLogParser, PackageVerificationParser, PackageUpgradeabilityParser
+from modules.parsers import GenericParser, GenericBlockParser, JournalLogParser, GenericCommandParser
 from definitions.constants import Constants
 from multiprocessing import Pool
 from modules.remotes import RemoteManager, Remote
@@ -15,113 +15,60 @@ class Controller:
         self.report_manager = ReportManager(self.config)
 
         self.parsers = []
+        self.definitions = []
         self._setup_scope()
         
     def _setup_scope(self):
+        if Constants.SCOPE.LOG in self.config.scope or Constants.SCOPE.CONF in self.config.scope or Constants.SCOPE.PACKAGE in self.config.scope:
+            for section in self.config.locations_config.sections():
+                section_scope = self.config.get_value(section, 'Scope')
+                section_scope = Constants.SCOPE.get_scope_index(section_scope)
 
-        if 1 in self.scope:
-            self.parsers += self._setup_log_parsers()
-        if 2 in self.scope:
-            self.parsers += self._setup_conf_parsers()
-        if 3 in self.scope:
-            self.parsers += self._setup_package_parser()
-        if 4 in self.scope:
+                if section_scope in self.scope:
+                    self._setup_parser(section, section_scope)
+                    
+        # Add the journal to the parsers list if it was enabled.
+        if Constants.SCOPE.LOG in self.scope and self.config.use_journal == True:
+            rules_path = f'{Constants.PATH.GENERIC_RULES_PATH}/{Constants.GENERIC.JOURNAL}.ini'
+            parser = JournalLogParser(rules_path, Constants.SCOPE.LOG)
+            self.parsers.append(parser)
+        
+        if Constants.SCOPE.SERVICE in self.scope:
             self.service_manager = self._setup_service_manager()
-        if 5 in self.scope:
+        if Constants.SCOPE.LOCAL in self.scope:
             self.checker_manager = self._setup_checkers()
-        if 6 in self.scope:
+        if Constants.SCOPE.REMOTE in self.scope:
             self.remote_manager = self._setup_remote_manager()
-        if 7 in self.scope:
+        if Constants.SCOPE.SMART in self.scope:
+            # Smart module is coming in a future version
             pass
 
-    def _setup_log_parsers(self):
-        parsers = []
+    def _setup_parser(self, section, scope):
+        path = self.config.get_value(section, 'Path')
+        command = self.config.get_value(section, 'Command')
 
-        if self.config.distro == Constants.DISTRO.ARCHLINUX:            
-            pacman_logs_path = self.config.get_value(Constants.SECTION.PACMAN_LOGS, 'Path')
-            rules_path = self.config.get_value(Constants.SECTION.PACMAN_LOGS, 'RulesFile')   
-            if pacman_logs_path is not None:
-                parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, pacman_logs_path))
+        if path is not None:
+            rules_path = self.config.get_value(section, 'RulesFile')
+            parser_type = self.config.get_value(section, 'Type')
+            is_command = False
         
-        if self.config.distro == Constants.DISTRO.UBUNTU:
-            apt_logs_path = self.config.get_value(Constants.SECTION.APT_LOGS, 'Path')
-            rules_path = self.config.get_value(Constants.SECTION.APT_LOGS, 'RulesFile')  
-            if apt_logs_path is not None:   
-                parsers.append(AptLogsParser(rules_path, Constants.SCOPE.LOG, apt_logs_path))
-
-            dpkg_logs_path = self.config.get_value(Constants.SECTION.DPKG_LOGS, 'Path')
-            rules_path = self.config.get_value(Constants.SECTION.DPKG_LOGS, 'RulesFile')
-            if dpkg_logs_path is not None:
-                parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, dpkg_logs_path))
-
-        custom_definitions = self.config.get_custom_definitions()
-        if custom_definitions is not None:
-            for section in custom_definitions.sections():
-                file_path = custom_definitions.get(section, 'Path')
-                rules_path = custom_definitions.get(section, 'RulesFile')
-
-                parsers.append(GenericParser(rules_path, Constants.SCOPE.LOG, file_path))
-
-        # The journal is considered always present, it could be considered a flag for those escenarios where it might not be, like a customized Archlinux
-        if True:
-            rules_path = f'{Constants.PATH.GENERIC_RULES_PATH}/{Constants.GENERIC.JOURNAL}.ini'
-            parsers.append(JournalLogParser(rules_path, Constants.SCOPE.LOG))
-
-        return parsers
-
-    def _setup_conf_parsers(self):
-        parsers = []
-
-        # sshd_conf
-        sshd_conf_path = self.config.get_value(Constants.SECTION.OPENSSH_CONF, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.OPENSSH_CONF, 'RulesFile')     
-        if sshd_conf_path is not None:
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, sshd_conf_path))
-
-        # passwd file
-        passwd_path = self.config.get_value(Constants.SECTION.PASSWD, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.PASSWD, 'RulesFile')     
-        if passwd_path is not None:
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, passwd_path))
-
-        # apache conf
-        apache_conf_path = self.config.get_value(Constants.SECTION.APACHE_CONF, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.APACHE_CONF, 'RulesFile') 
-        if apache_conf_path is not None:
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, apache_conf_path))
-
-        # login_defs conf
-        login_defs_conf_path = self.config.get_value(Constants.SECTION.LOGIN_DEFS, 'Path')
-        rules_path = self.config.get_value(Constants.SECTION.LOGIN_DEFS, 'RulesFile')    
-        if login_defs_conf_path is not None: 
-            parsers.append(GenericParser(rules_path, Constants.SCOPE.CONF, login_defs_conf_path))
-
-        return parsers
-
-    def _setup_package_parser(self):
-        parsers = []
-
-        if self.config.distro == Constants.DISTRO.ARCHLINUX:            
-            verify_command = self.config.get_value(Constants.SECTION.PACMAN_CHECKS, 'Command')
-            upgradeable_command = self.config.get_value(Constants.SECTION.UPGRADEABLE, 'Command')
-            verify_rules_path = self.config.get_value(Constants.SECTION.PACMAN_CHECKS, 'RulesFile')
-            upgradeable_rules_path = self.config.get_value(Constants.SECTION.UPGRADEABLE, 'RulesFile')   
+        if command is not None:
+            rules_path = self.config.get_value(section, 'RulesFile')
+            parser_type = self.config.get_value(section, 'Type')
+            is_command = True
         
-        if self.config.distro == Constants.DISTRO.UBUNTU:
-            verify_command = self.config.get_value(Constants.SECTION.DPKG_CHECKS, 'Command')
-            upgradeable_command = self.config.get_value(Constants.SECTION.UPGRADEABLE, 'Command')
-            verify_rules_path = self.config.get_value(Constants.SECTION.DPKG_CHECKS, 'RulesFile')     
-            upgradeable_rules_path = self.config.get_value(Constants.SECTION.UPGRADEABLE, 'RulesFile')     
-        
-        if verify_command is not None:
-            verifier_parser = PackageVerificationParser(verify_rules_path, Constants.SCOPE.PACKAGE, verify_command)
-            parsers.append(verifier_parser)
-        
-        if upgradeable_command is not None:
-            upgradeable_parser = PackageUpgradeabilityParser(upgradeable_rules_path, Constants.SCOPE.PACKAGE, upgradeable_command, self.config.distro)
-            parsers.append(upgradeable_parser)
+        if not is_command:
+            if parser_type is None or parser_type == Constants.SECTION.TYPE_LINE:
+                parser = GenericParser(rules_path, scope, path)
+            elif parser_type == Constants.SECTION.TYPE_BLOCK:
+                start_delimiter = self.config.get_value(section, 'StartDelimiter')
+                end_delimiter = self.config.get_value(section,'EndDelimiter')
 
-        return parsers
+                parser = GenericBlockParser(rules_path, scope, start_delimiter, end_delimiter, path)
+        else:
+            parser = GenericCommandParser(rules_path, scope, command)
+
+        self.parsers.append(parser)
 
     def _setup_service_manager(self):
         service_manager = ServiceManager(self.config)
