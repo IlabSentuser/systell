@@ -33,3 +33,6 @@ The third step is to execute the tool either:
 `python main.py` for interactive mode or
 <br>
 `python main.py -h` for help with unattended mode
+
+# Documentation
+Check the wiki ;)
