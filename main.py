@@ -1,6 +1,5 @@
 import sys
 from modules.controller import Controller
-from modules import cli
 from utils import fprint as fprint
 from config import Config
 import configparser
