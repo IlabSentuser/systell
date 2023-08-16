@@ -183,8 +183,11 @@ class Remote:
                             if len(result) == 4:
                                 indentation = len (other_ports)
                                 reason = f'{" " * indentation}Reason: at least one port does not satisfy the condition ({result[3]})'
+                            else:
+                                reason = None
                             report.append(other_ports)
-                            report.append(reason)
+                            if reason is not None:
+                                report.append(reason)
                         else:
                             assessment = f'  Port {result[1]} is {self.assessment.get(result[1])}: {result[2]}'
                             report.append(assessment)
