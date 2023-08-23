@@ -7,7 +7,7 @@ import socket
 try:
     import psutil
 except ImportError:
-    print('nmap module not available, please make sure to install it.')
+    print('psutil module not available, please make sure to install it.')
 
 class CheckerManager:
     
